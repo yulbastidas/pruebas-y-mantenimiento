@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelling Bee Duo - Champagnat</title>
+<style>
+    :root {
+        --duo-green: #58cc02;
+        --duo-blue: #1cb0f6;
+        --duo-red: #ff4b4b;
+        --duo-orange: #ff9600;
+        --bg-color: #f0f7ff;
+    }
+
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: var(--bg-color);
+        display: flex; 
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh; margin: 0;
+        padding: 15px 10px;
+        box-sizing: border-box;
+    }
+
+    .institution-logo {
+        max-width: 220px;
+        width: 70%;
+        height: auto;
+        margin-bottom: 15px;
+    }
+
+    .main-layout {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px; /* Un poco más estrecho para mejor lectura */
+        width: 100%;
+    }
+
+    .game-container {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 8px 0 #ccd0d4;
+        padding: 20px;
+        text-align: center;
+        min-height: 380px;
+        z-index: 2;
+    }
+
+    /* Panel de Duo pegado al contenedor */
+    .bottom-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: -5px; /* Efecto de proximidad */
+        padding-top: 0;
+        width: 100%;
+    }
+
+    #feedback-text {
+        font-weight: bold;
+        font-size: 20px;
+        margin: 10px 0;
+        min-height: 25px;
+        z-index: 3;
+    }
+
+    .duo-container {
+        width: 120px;
+        height: 120px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #side-duo-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .control-panel {
+        display: none;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .word-title { 
+        font-size: clamp(28px, 7vw, 45px); 
+        font-weight: bold; 
+        margin: 10px 0; 
+        color: #3c3c3c; 
+        text-transform: uppercase; 
+    }
+
+    .btn-opt {
+        width: 100%;
+        max-width: 350px;
+        padding: 12px;
+        margin: 6px auto;
+        display: block;
+        border: 2px solid #e5e5e5;
+        border-bottom: 4px solid #e5e5e5;
+        border-radius: 12px;
+        background: white;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .btn-opt:active { transform: translateY(2px); border-bottom-width: 2px; }
+    .btn-opt.correct { background: #d7ffb8 !important; border-color: var(--duo-green) !important; color: #1a6d00; }
+    .btn-opt.wrong { background: #ffdfe0 !important; border-color: var(--duo-red) !important; color: #a30000; }
+
+    .input-spell {
+        width: 85%;
+        max-width: 350px;
+        padding: 12px;
+        font-size: 18px;
+        text-align: center;
+        border: 3px solid #e5e5e5;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        outline: none;
+    }
+
+    .btn-action {
+        background: var(--duo-blue);
+        color: white;
+        border: none;
+        border-bottom: 4px solid #189bcc;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .level-card {
+        padding: 12px;
+        margin: 8px 0;
+        border: 2px solid #e5e5e5;
+        border-bottom: 4px solid #e5e5e5;
+        border-radius: 15px;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .level-card h3 { margin: 0; font-size: 16px; }
+    .level-card p { margin: 3px 0 0; font-size: 13px; color: #666; }
+
+    .progress-bar { height: 8px; background: #e5e5e5; border-radius: 10px; margin-bottom: 15px; }
+    #progress-inner { height: 100%; background: var(--duo-green); width: 0%; transition: 0.4s; }
+
+    #timer-display { font-size: 14px; }
+    #hint-text { font-size: 14px; color: #888; font-style: italic; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<img src="https://site.champagnatpasto.com/images/Slider-partes/informativos/logo-site-champa.png" alt="Logo Champagnat" class="institution-logo">
+
+<div class="main-layout">
+    <div class="control-panel" id="control-panel">
+        <button class="btn-action" style="background:var(--duo-orange); border-bottom-color:#cc7800;" onclick="location.reload()">🔄 Reiniciar</button>
+        <button class="btn-action" style="background:var(--duo-red); border-bottom-color:#a30000;" onclick="location.reload()">🏠 Menú</button>
+    </div>
+
+    <div class="game-container">
+        <div id="level-screen">
+            <h1 style="color: var(--duo-green); margin: 0 0 15px 0; font-size: 24px;">Spelling Bee Academy</h1>
+            <div class="level-card" onclick="setupGame(1)"><h3>Nivel 1: Alfabeto Visual</h3><p>Ves la letra y su sonido.</p></div>
+            <div class="level-card" onclick="setupGame(2)" style="border-color: var(--duo-blue);"><h3>Nivel 2: Oído Alfabeto</h3><p>Elige la LETRA que escuchas.</p></div>
+            <div class="level-card" onclick="setupGame(3)" style="border-color: var(--duo-blue);"><h3>Nivel 3: Oído Deletreo</h3><p>Elige la FONÉTICA que escuchas.</p></div>
+            <div class="level-card" onclick="setupGame(4)"><h3>Nivel 4: Palabras con 'A'</h3><p>Deletreo de palabras con A.</p></div>
+            <div class="level-card" onclick="setupGame(5)"><h3>Nivel 5: Palabras con 'B'</h3><p>Deletreo de palabras con B.</p></div>
+            <div class="level-card" onclick="setupGame(6)" style="border-color: var(--duo-orange);"><h3>Nivel 6: Maestro Escritor</h3><p>Escribe el deletreo (10 palabras).</p></div>
+        </div>
+
+        <div id="game-area" style="display:none;">
+            <div class="progress-bar"><div id="progress-inner"></div></div>
+            <div id="timer-display" style="font-weight:bold; color:var(--duo-orange);">⏱ 30s</div>
+            <div class="word-title" id="display-target">-</div>
+            <p id="hint-text"></p>
+            
+            <div id="options-box">
+                <button id="b0" class="btn-opt"></button>
+                <button id="b1" class="btn-opt"></button>
+                <button id="b2" class="btn-opt"></button>
+            </div>
+
+            <div id="write-box" style="display:none;">
+                <input type="text" id="spell-input" class="input-spell" placeholder="Ej: bi-ei-el-el" autocomplete="off">
+                <br>
+                <button class="btn-action" onclick="checkWriteAnswer()">Enviar Deletreo</button>
+            </div>
+
+            <button class="btn-action" style="margin-top:15px; background: #eee; color: #3c3c3c; border-bottom-color: #ccc;" onclick="playAudio()">🔊 Escuchar de nuevo</button>
+        </div>
+    </div>
+
+    <div class="bottom-panel">
+        <div id="feedback-text"></div>
+        <div class="duo-container">
+            <img id="side-duo-img" src="https://pbs.twimg.com/media/FosNYFgX0AMp3Qm.jpg">
+        </div>
+    </div>
+</div>
+
+<script>
+    const alphabet = [{l:"A",c:"ei"},{l:"B",c:"bi"},{l:"C",c:"si"},{l:"D",c:"di"},{l:"E",c:"i"},{l:"F",c:"ef"},{l:"G",c:"yi"},{l:"H",c:"eich"},{l:"I",c:"ai"},{l:"J",c:"yei"},{l:"K",c:"kei"},{l:"L",c:"el"},{l:"M",c:"em"},{l:"N",c:"en"},{l:"O",c:"ou"},{l:"P",c:"pi"},{l:"Q",c:"kiu"},{l:"R",c:"ar"},{l:"S",c:"es"},{l:"T",c:"ti"},{l:"U",c:"iu"},{l:"V",c:"vi"},{l:"W",c:"dabeliu"},{l:"X",c:"eks"},{l:"Y",c:"uai"},{l:"Z",c:"zi"}];
+    const wordsA = ["apple", "ant", "arm", "art", "act", "air", "age", "ago", "all", "any"];
+    const wordsB = ["ball", "boy", "bus", "box", "big", "bad", "bed", "bee", "buy", "bye"];
+
+    let currentGameData = [];
+    let currentLevel = 0;
+    let currentIndex = 0;
+    let score = 0;
+    let timer;
+
+    function getPhonetic(word) {
+        return word.toUpperCase().split('').map(l => {
+            const found = alphabet.find(a => a.l === l);
+            return found ? found.c : l;
+        }).join('-');
+    }
+
+    function getFakePhonetic(word) {
+        let letters = word.toUpperCase().split('');
+        let idxToChange = Math.floor(Math.random() * letters.length);
+        let randomLetter = alphabet[Math.floor(Math.random() * 26)].l;
+        letters[idxToChange] = randomLetter;
+        return letters.map(l => {
+            const found = alphabet.find(a => a.l === l);
+            return found ? found.c : l;
+        }).join('-');
+    }
+
+    function setupGame(level) {
+        currentLevel = level;
+        currentIndex = 0; score = 0;
+        document.getElementById('level-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'block';
+        document.getElementById('control-panel').style.display = 'flex';
+        
+        if(level <= 3) {
+            currentGameData = alphabet.map(i => ({word: i.l, phonetic: i.c}));
+        } else if(level === 4) {
+            currentGameData = wordsA.map(w => ({word: w.toUpperCase(), phonetic: getPhonetic(w)}));
+        } else if(level === 5) {
+            currentGameData = wordsB.map(w => ({word: w.toUpperCase(), phonetic: getPhonetic(w)}));
+        } else if(level === 6) {
+            currentGameData = [...wordsA, ...wordsB].sort(() => 0.5 - Math.random()).slice(0, 10).map(w => ({word: w.toUpperCase(), phonetic: getPhonetic(w)}));
+            document.getElementById('options-box').style.display = 'none';
+            document.getElementById('write-box').style.display = 'block';
+        }
+        currentGameData.sort(() => 0.5 - Math.random());
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if(currentIndex >= currentGameData.length) { showResults(); return; }
+        const item = currentGameData[currentIndex];
+        const display = document.getElementById('display-target');
+        const hint = document.getElementById('hint-text');
+        
+        document.getElementById('progress-inner').style.width = (currentIndex / currentGameData.length * 100) + "%";
+        document.getElementById('side-duo-img').src = "https://pbs.twimg.com/media/FosNYFgX0AMp3Qm.jpg";
+        document.getElementById('feedback-text').innerText = "";
+
+        if(currentLevel === 2 || currentLevel === 3) {
+            display.innerText = "???";
+            hint.innerText = (currentLevel === 2) ? "Elige la LETRA" : "Elige el DELETREO";
+        } else if(currentLevel === 6) {
+            display.innerText = item.word;
+            hint.innerText = "Escribe el deletreo fonético";
+        } else {
+            display.innerText = item.word;
+            hint.innerText = "Elige la fonética correcta";
+        }
+
+        if(currentLevel !== 6) {
+            let correct = (currentLevel === 2) ? item.word : item.phonetic;
+            let opts = [correct];
+            while(opts.length < 3) {
+                let fake;
+                if(currentLevel === 2) fake = alphabet[Math.floor(Math.random()*26)].l;
+                else if(currentLevel === 3) fake = alphabet[Math.floor(Math.random()*26)].c;
+                else fake = getFakePhonetic(item.word.toLowerCase());
+                if(!opts.includes(fake)) opts.push(fake);
+            }
+            opts.sort(() => 0.5 - Math.random());
+            for(let i=0; i<3; i++) {
+                const b = document.getElementById(`b${i}`);
+                b.innerText = opts[i];
+                b.className = "btn-opt"; b.disabled = false;
+                b.onclick = () => checkAnswer(opts[i] === correct, correct, b);
+            }
+        }
+        playAudio();
+        startTimer();
+    }
+
+    function playAudio() {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(currentGameData[currentIndex].word);
+        utter.lang = 'en-US'; utter.rate = 0.7;
+        window.speechSynthesis.speak(utter);
+    }
+
+    function checkAnswer(correct, correctVal, btn) {
+        clearInterval(timer);
+        const duo = document.getElementById('side-duo-img');
+        const feed = document.getElementById('feedback-text');
+        const display = document.getElementById('display-target');
+        
+        document.querySelectorAll('.btn-opt').forEach(b => b.disabled = true);
+
+        if(currentLevel === 2 || currentLevel === 3) {
+            display.innerText = `${currentGameData[currentIndex].word} (${currentGameData[currentIndex].phonetic})`;
+        }
+
+        if(correct) {
+            if(btn) btn.classList.add('correct');
+            duo.src = "https://pbs.twimg.com/media/Fyx9IgNWIAIQI-f.jpg";
+            feed.innerText = "¡Excelente! ✨"; feed.style.color = "var(--duo-green)";
+            score++;
+        } else {
+            if(btn) btn.classList.add('wrong');
+            duo.src = "https://fastcompanybrasil.com/wp-content/uploads/2025/04/Duolingo_morte_mascote_1.webp";
+            feed.innerText = "Error. Era: " + correctVal; feed.style.color = "var(--duo-red)";
+        }
+        setTimeout(() => { currentIndex++; loadQuestion(); }, 2500);
+    }
+
+    function checkWriteAnswer() {
+        const input = document.getElementById('spell-input').value.toLowerCase().trim();
+        const correct = currentGameData[currentIndex].phonetic;
+        checkAnswer(input === correct, correct, null);
+    }
+
+    function startTimer() {
+        clearInterval(timer);
+        let timeLeft = 30;
+        document.getElementById('timer-display').innerText = `⏱ ${timeLeft}s`;
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-display').innerText = `⏱ ${timeLeft}s`;
+            if(timeLeft <= 0) checkAnswer(false, (currentLevel === 2 ? currentGameData[currentIndex].word : currentGameData[currentIndex].phonetic), null);
+        }, 1000);
+    }
+
+    function showResults() {
+        const grade = ((score / currentGameData.length) * 5).toFixed(1);
+        document.getElementById('game-area').innerHTML = `
+            <h2>Terminado</h2>
+            <div style="font-size:50px; color:var(--duo-blue); font-weight:bold;">${grade} / 5.0</div>
+            <button class="btn-action" onclick="location.reload()">Ir al Menú</button>
+        `;
+    }
+</script>
+</body>
+</html>
