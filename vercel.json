@@ -1,7 +1,7 @@
 {
   "routes": [
     {
-      "src": "/loadario-.*\\.txt",
+      "src": "/loaderio-.*\\.txt",
       "dest": "/public/$0"
     }
   ]
